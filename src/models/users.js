@@ -45,24 +45,29 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
-},{
+    }],
+
+    avatar: {
+        type: Buffer
+    }
+}, {
     timestamps: true
 })
 
-userSchema.virtual('tasks',{
+userSchema.virtual('tasks', {
     ref: 'Task',
     localField: '_id',
     foreignField: 'owner'
 
 })
 
-userSchema.methods.toJSON = function(){
+userSchema.methods.toJSON = function () {
     const user = this
     const userObject = user.toObject()
-    
+
     delete userObject.password
     delete userObject.tokens
+    delete userObject.avatar
 
     return userObject
 }
@@ -101,9 +106,9 @@ userSchema.pre('save', async function (next) {
 
     next()
 })
- 
+
 userSchema.post('findOneAndDelete', async function (user) {
-    await Task.deleteMany({owner: user._id})
+    await Task.deleteMany({ owner: user._id })
 })
 
 const User = mongoose.model('User', userSchema)
