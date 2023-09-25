@@ -18,8 +18,23 @@ routers.post("/tasks", auth,async (req, res) => {
 })
 
 routers.get("/tasks", auth, async (req, res) => {
+    const match = {}
+    let tasks
+    if(req.query.completed){
+        match.completed = req.query.completed === "true"
+    }
     try {
-        const tasks = await Task.find({'owner': req.user._id})
+        if(match.completed===undefined){
+            tasks = await Task.find({
+                owner: req.user._id
+            })
+        }
+        else{
+            tasks = await Task.find({
+                'owner': req.user._id,
+                completed: match.completed
+            })
+        }
         res.send(tasks)
     }
     catch (e) {
