@@ -4,11 +4,13 @@ const User = require("../models/users")
 const auth = require('../middleware/auth')
 const multer = require('multer')
 const sharp = require('sharp')
+const {sendWelcomeMail, sendGoodByeMail} = require('../emails/accounts')
 
 routers.post('/users', async (req, res) => {
     const user = new User(req.body)
     try {
         await user.save()
+        sendWelcomeMail(user.email, user.name)
         const token = await user.generateAuthToken()
         res.status(201).send({ user, token })
     }
@@ -79,9 +81,10 @@ routers.patch("/users/me", auth, async (req, res) => {
     }
 })
 
-routers.delete("/users/me", auth,async (req, res) => {
+routers.delete("/users/me", auth, async (req, res) => {
     try {
       const user = await User.findOneAndDelete({_id: req.user._id})
+      sendGoodByeMail(user.email, user.name)
         res.send(user)
     }
     catch (e) {
